@@ -127,7 +127,7 @@
             margin-bottom: 5mm;
         }
         .header-left {
-            width: 35%;
+            width: 30%;
             text-align: center;
             vertical-align: top;
         }
@@ -186,7 +186,7 @@
         /* ខ្លឹមសារកណ្តាល */
         .content-body {
             text-align: left;
-            font-size: 17.5px;
+            font-size: 14px;
             line-height: 2;
             text-indent: 30px;
             margin-top: 15px;
@@ -381,7 +381,9 @@
                             <tr>
                                 <td class="footer-col">
                                     <div class="txt-regular date-khmer" style="visibility:hidden;">កាលបរិច្ឆេទលាក់</div>
-                                    <div class="txt-regular" id="lbl_dateEn_left_${index}">ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦</div>
+                                    <div class="txt-regular date-khmer" id="lbl_dateKh_${index}">${st.dateKh}</div>
+                                    <div class="txt-regular" id="lbl_dateEn_${index}">វិ.សីហមុនី ថ្ងៃទី${st.dateEn.replace('ថ្ងៃទី','')}</div
+                                    <div class="txt-regular" id="lbl_dateEn_left_${index}">
                                     <div class="sign-title">បានឃើញ និងឯកភាព</div>
                                     <div class="txt-muol" style="font-size:13px; color:#000099; margin-top:5px;">នាយកសាលា</div>
                                 </td>
