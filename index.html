@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>កម្មវិធីបង្កើតបណ្ណសរសើរស្វ័យប្រវត្តិ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Muol+Light&family=Khmer+OS+Siemreap&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- ទម្រង់ទូទៅសម្រាប់គ្រប់គ្រងទិន្នន័យ (Dashboard) --- */
+        body {
+            font-family: 'Siemreap', 'Khmer OS Siemreap', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .admin-panel {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 1100px;
+            margin: 0 auto 30px auto;
+        }
+        .admin-panel h2 {
+            font-family: 'Moul', 'Khmer OS Muol Light', serif;
+            color: #003366;
+            text-align: center;
+            margin-top: 0;
+        }
+        .global-settings {
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .student-row {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+        .student-row h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        label {
+            font-size: 12px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Siemreap', sans-serif;
+        }
+        .btn-print {
+            display: block;
+            width: 100%;
+            background: #0066cc;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Moul', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .btn-print:hover {
+            background: #004c99;
+        }
+
+        /* --- ទម្រង់ Layout បណ្ណសរសើរសម្រាប់បង្ហាញ និងបោះពុម្ព --- */
+        #certificates-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        /* ទំហំខ្នាត A4 ផ្ដេក */
+        .certificate {
+            width: 297mm;
+            height: 210mm;
+            background-color: #ffffff;
+            position: relative;
+            box-sizing: border-box;
+            padding: 28mm 35mm; /* លៃតម្រឹមឲ្យចូលក្នុងស៊ុម */
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
+
+        /* ស្ទីលអក្សរតាមគំរូដើម */
+        .txt-muol {
+            font-family: 'Moul', 'Khmer OS Muol Light', serif;
+            color: #000099;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .txt-regular {
+            font-family: 'Siemreap', 'Khmer OS Siemreap', sans-serif;
+            color: #000;
+            margin: 0;
+        }
+
+        /* ប្លង់ផ្នែកខាងលើ */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5mm;
+        }
+        .header-left {
+            width: 35%;
+            text-align: center;
+            vertical-align: top;
+        }
+        .header-center {
+            width: 30%;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .header-right {
+            width: 35%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .logo-box {
+            width: 55px;
+            height: 65px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+        .ministry-title { font-size: 16px; color: #0000b3; }
+        .school-title { font-size: 15px; color: #0000b3; margin-top: 3px; }
+        .country-title { font-size: 16px; color: #0000b3; }
+        .motto-title { font-size: 14px; color: #0000b3; margin-top: 5px; }
+
+        /* ប្លង់ចំណងជើងកណ្តាល "បណ្ណសរសើរ" */
+        .cert-title-container {
+            text-align: center;
+            position: relative;
+            margin: 10px 0;
+        }
+        .cert-main-title {
+            font-size: 42px;
+            color: #cc0000;
+            text-shadow: 1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff;
+            letter-spacing: 2px;
+            z-index: 2;
+            position: relative;
+        }
+        .director-title {
+            font-size: 18px;
+            color: #cc6600;
+            margin-top: 2px;
+        }
+
+        /* បូ មេដាយស្តាំ */
+        .ribbon-badge {
+            position: absolute;
+            right: 45mm;
+            top: 60mm;
+            width: 65px;
+            height: auto;
+            z-index: 3;
+        }
+
+        /* ខ្លឹមសារកណ្តាល */
+        .content-body {
+            text-align: left;
+            font-size: 17.5px;
+            line-height: 2;
+            text-indent: 30px;
+            margin-top: 15px;
+            color: #000;
+        }
+        .highlight-blue { color: #0000cc; font-weight: bold; font-family: 'Moul', sans-serif; font-size: 17px;}
+        .highlight-red { color: #cc0000; font-weight: bold; font-family: 'Moul', sans-serif; font-size: 18px;}
+        .footer-note {
+            text-align: center;
+            font-size: 14.5px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* ផ្នែកហត្ថលេខាខាងក្រោម */
+        .footer-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .footer-col {
+            width: 33.33%;
+            vertical-align: top;
+            text-align: center;
+            font-size: 13.5px;
+        }
+        .date-khmer {
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        .sign-title {
+            font-family: 'Moul', sans-serif;
+            color: #000099;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* ប្រអប់រូបថត ឬត្រា */
+        .photo-space {
+            width: 2.5cm;
+            height: 3.2cm;
+            border: 1px solid #999;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        /* --- បទបញ្ជាសម្រាប់ការបោះពុម្ព (Print CSS) --- */
+        @media print {
+            .admin-panel {
+                display: none !important;
+            }
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+            .certificate {
+                box-shadow: none;
+                page-break-after: always;
+                box-sizing: border-box;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <h2>ផ្ទាំងគ្រប់គ្រង និងកែទិន្នន័យបណ្ណសរសើរ</h2>
+        <hr>
+        
+        <div class="global-settings">
+            <div>
+                <label>ជ្រើសរើសស៊ុមបណ្ណសរសើរ៖</label>
+                <select id="frameSelect" onchange="changeFrame(this.value)">
+                    
+                    <option value="https://i.imgur.com/vHqV9bF.jpg">ស៊ុមគំរូទី២</option>
+                    <option value="custom">Upload ស៊ុមខ្លួនឯង...</option>
+                </select>
+                <input type="file" id="customFrameInput" accept="image/*" style="display:none; margin-top:5px;" onchange="uploadCustomFrame(this)">
+            </div>
+            <div>
+                <label>ផ្លាស់ប្តូរឡូហ្គូ (ក្រសួង/សាលា)៖</label>
+                <input type="file" accept="image/*" onchange="uploadLogo(this)">
+            </div>
+            <div>
+                <label>ឈ្មោះសាលារៀន៖</label>
+                <input type="text" id="schoolNameInput" value="វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី" oninput="updateGlobal©()">
+            </div>
+            <div>
+                <label>ឆ្នាំសិក្សា៖</label>
+                <input type="text" id="schoolYearInput" value="២០២៥-២០២៦" oninput="updateGlobal()">
+            </div>
+        </div>
+
+        <div id="students-inputs-container">
+            </div>
+
+        <button class="btn-print" onclick="window.print()">បោះពុម្ពបណ្ណសរសើរទាំង ៥ នាក់ (Print / Save as PDF)</button>
+    </div>
+
+    <div id="certificates-container">
+        </div>
+
+    <script>
+        // ទិន្នន័យលំនាំដើមរបស់សិស្សទាំង ៥ នាក់ (អាចកែបានតាមចិត្ត)
+        const defaultStudents = [
+            { name: "សល់ សៀវហេង", sex: "ប្រុស", dob: "២៤ ខែមេសា ឆ្នាំ ២០១៤", class: "៧ \"C\"", rank: "៥", month: "ឧសភា", dateKh: "ថ្ងៃចន្ទ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ នព្វស័ក ព.ស ២៥៧០", dateEn: "ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦", teacher: "រ៉ូ ផានី" },
+            { name: "ចាន់ ម៉ារីណា", sex: "ស្រី", dob: "១២ ខែកញ្ញា ឆ្នាំ ២០១៤", class: "៧ \"C\"", rank: "១", month: "ឧសភា", dateKh: "ថ្ងៃចន្ទ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ នព្វស័ក ព.ស ២៥៧០", dateEn: "ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦", teacher: "រ៉ូ ផានី" },
+            { name: "លី ម៉េងហួរ", sex: "ប្រុស", dob: "០៥ ខែមិនា ឆ្នាំ ២០១៣", class: "៧ \"C\"", rank: "២", month: "ឧសភា", dateKh: "ថ្ងៃចន្ទ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ នព្វស័ក ព.ស ២៥៧០", dateEn: "ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦", teacher: "រ៉ូ ផានី" },
+            { name: "កែវ សុភ័ក្រ", sex: "ស្រី", dob: "១៨ ខែវិច្ឆិកា ឆ្នាំ ២០១៤", class: "៧ \"C\"", rank: "៣", month: "ឧសភា", dateKh: "ថ្ងៃចន្ទ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ នព្វស័ក ព.ស ២៥៧០", dateEn: "ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦", teacher: "រ៉ូ ផានី" },
+            { name: "សួន វីរៈ", sex: "ប្រុស", dob: "៣០ ខែធ្នូ ឆ្នាំ ២០១៤", class: "៧ \"C\"", rank: "៤", month: "ឧសភា", dateKh: "ថ្ងៃចន្ទ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ នព្វស័ក ព.ស ២៥៧០", dateEn: "ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦", teacher: "រ៉ូ ផានី" }
+        ];
+
+        // តំណភ្ជាប់រូបភាពលំនាំដើម
+        let currentFrameUrl = "https://i.imgur.com/G5gSbyq.jpg"; // រូបភាពស៊ុមផ្កាភ្ញីពណ៌ខៀវព័ទ្ធជុំវិញ
+        let currentLogoUrl = "https://i.imgur.com/ccYfF9R.png";  // ឡូហ្គូក្រសួងអប់រំ
+
+        // មុខងារបង្កើត Inputs និង បណ្ណសរសើរដំបូង
+        function init() {
+            const inputsContainer = document.getElementById('students-inputs-container');
+            const certsContainer = document.getElementById('certificates-container');
+            
+            inputsContainer.innerHTML = '';
+            certsContainer.innerHTML = '';
+
+            defaultStudents.forEach((st, index) => {
+                // ១. បង្កើត Form កែទិន្នន័យ
+                inputsContainer.innerHTML += `
+                    <div class="student-row">
+                        <h4>សិស្សទី ${index + 1}</h4>
+                        <div class="grid-inputs">
+                            <div><label>ឈ្មោះសិស្ស</label><input type="text" id="name_${index}" value="${st.name}" oninput="updateCert(${index})"></div>
+                            <div><label>ភេទ</label><input type="text" id="sex_${index}" value="${st.sex}" oninput="updateCert(${index})"></div>
+                            <div><label>ថ្ងៃខែឆ្នាំកំណើត</label><input type="text" id="dob_${index}" value="${st.dob}" oninput="updateCert(${index})"></div>
+                            <div><label>រៀនថ្នាក់ទី</label><input type="text" id="class_${index}" value="${st.class}" oninput="updateCert(${index})"></div>
+                            <div><label>ចំណាត់ថ្នាក់លេខ</label><input type="text" id="rank_${index}" value="${st.rank}" oninput="updateCert(${index})"></div>
+                            <div><label>ប្រចាំខែ</label><input type="text" id="month_${index}" value="${st.month}" oninput="updateCert(${index})"></div>
+                            <div><label>កាលបរិច្ឆេទ (ខ្មែរ)</label><input type="text" id="dateKh_${index}" value="${st.dateKh}" oninput="updateCert(${index})"></div>
+                            <div><label>កាលបរិច្ឆេទ (សកល)</label><input type="text" id="dateEn_${index}" value="${st.dateEn}" oninput="updateCert(${index})"></div>
+                            <div><label>គ្រូបន្ទុកថ្នាក់</label><input type="text" id="teacher_${index}" value="${st.teacher}" oninput="updateCert(${index})"></div>
+                        </div>
+                    </div>
+                `;
+
+                // ២. បង្កើតទម្រង់ HTML បណ្ណសរសើរ (យោងតាមគំរូដើម ១០០%)
+                certsContainer.innerHTML += `
+                    <div class="certificate" id="cert_card_${index}" style="background-image: url('${currentFrameUrl}');">
+                        
+                        <table class="header-table">
+                            <tr>
+                                <td class="header-left">
+                                    <img src="${currentLogoUrl}" class="logo-box" id="cert_logo_${index}">
+                                    <div class="txt-muol ministry-title">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                                    <div class="txt-regular" style="font-size:12px; font-weight:bold; color:#0000b3;">ការិយាល័យអប់រំ ស្រុកជលគិរី</div>
+                                    <div class="txt-muol school-title" id="cert_school_${index}">វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+                                </td>
+                                <td class="header-center"></td>
+                                <td class="header-right">
+                                    <div class="txt-muol country-title">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                                    <div class="txt-muol motto-title">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                                    <div style="color:#0000b3; font-size:12px;">❖❖❖❖❖</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <img src="https://i.imgur.com/E2uIscA.png" class="ribbon-badge">
+
+                        <div class="cert-title-container">
+                            <div class="txt-muol cert-main-title">បណ្ណសរសើរ</div>
+                            <div class="txt-muol director-title">នាយកវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+                        </div>
+
+                        <div class="txt-regular content-body">
+                            សូមសរសើរចំពោះសិស្សឈ្មោះ៖ <span class="highlight-blue" id="lbl_name_${index}">${st.name}</span> 
+                            ភេទ <span class="highlight-blue" id="lbl_sex_${index}">${st.sex}</span> 
+                            កើតនៅថ្ងៃទី <span class="highlight-blue" id="lbl_dob_${index}">${st.dob}</span> 
+                            រៀនថ្នាក់ទី <span class="highlight-blue" id="lbl_class_${index}">${st.class}</span><br>
+                            ដែលទទួលបានលទ្ធផលល្អក្នុងការសិក្សានិងទទួលបានចំណាត់ថ្នាក់លេខ <span class="highlight-red" id="lbl_rank_${index}">${st.rank}</span> 
+                            <span class="highlight-red">ប្រចាំខែ${st.month}</span> 
+                            ឆ្នាំសិក្សា <span class="highlight-blue" id="lbl_year_${index}">២០២៥-២០២៦</span> ។
+                        </div>
+                        
+                        <div class="txt-regular footer-note">
+                            បណ្ណសរសើរនេះប្រគល់ជូនសាមីខ្លួនដើម្បីប្រើប្រាស់តាមការដែលអាចប្រើបាន ។
+                        </div>
+
+                        <table class="footer-table">
+                            <tr>
+                                <td class="footer-col">
+                                    <div class="txt-regular date-khmer" style="visibility:hidden;">កាលបរិច្ឆេទលាក់</div>
+                                    <div class="txt-regular" id="lbl_dateEn_left_${index}">ថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦</div>
+                                    <div class="sign-title">បានឃើញ និងឯកភាព</div>
+                                    <div class="txt-muol" style="font-size:13px; color:#000099; margin-top:5px;">នាយកសាលា</div>
+                                </td>
+                                <td class="footer-col">
+                                    <div style="margin-top:10px;">
+                                        <div class="photo-space"></div>
+                                    </div>
+                                </td>
+                                <td class="footer-col">
+                                    <div class="txt-regular date-khmer" id="lbl_dateKh_${index}">${st.dateKh}</div>
+                                    <div class="txt-regular" id="lbl_dateEn_${index}">វិ.សីហមុនី ថ្ងៃទី${st.dateEn.replace('ថ្ងៃទី','')}</div>
+                                    <div class="sign-title">គ្រូបន្ទុកថ្នាក់</div>
+                                    <div class="txt-regular" id="lbl_teacher_${index}" style="margin-top:45px; font-weight:bold;">${st.teacher}</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                `;
+            });
+        }
+
+        // មុខងារធ្វើបច្ចុប្បន្នភាពទិន្នន័យពេលវាយបញ្ចូលតាមប្រអប់នីមួយៗ
+        function updateCert(index) {
+            document.getElementById(`lbl_name_${index}`).innerText = document.getElementById(`name_${index}`).value;
+            document.getElementById(`lbl_sex_${index}`).innerText = document.getElementById(`sex_${index}`).value;
+            document.getElementById(`lbl_dob_${index}`).innerText = document.getElementById(`dob_${index}`).value;
+            document.getElementById(`lbl_class_${index}`).innerText = document.getElementById(`class_${index}`).value;
+            document.getElementById(`lbl_rank_${index}`).innerText = document.getElementById(`rank_${index}`).value;
+            
+            let m = document.getElementById(`month_${index}`).value;
+            document.getElementById(`lbl_rank_${index}`).nextElementSibling.innerText = `ប្រចាំខែ${m}`;
+            
+            document.getElementById(`lbl_dateKh_${index}`).innerText = document.getElementById(`dateKh_${index}`).value;
+            
+            let enDate = document.getElementById(`dateEn_${index}`).value;
+            document.getElementById(`lbl_dateEn_${index}`).innerText = "វិទ្យាល័យព្រះនរោត្តមសីហមុនី " + enDate;
+            document.getElementById(`lbl_dateEn_left_${index}`).innerText = enDate;
+            
+            document.getElementById(`lbl_teacher_${index}`).innerText = document.getElementById(`teacher_${index}`).value;
+        }
+
+        // មុខងារកែប្រែទិន្នន័យរួម (សាលារៀន និង ឆ្នាំសិក្សា)
+        function updateGlobal() {
+            let school = document.getElementById('schoolNameInput').value;
+            let year = document.getElementById('schoolYearInput').value;
+            
+            for(let i=0; i<5; i++) {
+                document.getElementById(`cert_school_${i}`).innerText = school;
+                document.getElementById(`lbl_year_${i}`).innerText = year;
+            }
+        }
+
+        // មុខងារប្តូរស៊ុម (Frame)
+        function changeFrame(value) {
+            const customInput = document.getElementById('customFrameInput');
+            if(value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+                currentFrameUrl = value;
+                for(let i=0; i<5; i++) {
+                    document.getElementById(`cert_card_${i}`).style.backgroundImage = `url('${currentFrameUrl}')`;
+                }
+            }
+        }
+
+        // មុខងារទាញយករូបភាពស៊ុមដែលបាន Upload ខ្លួនឯង
+        function uploadCustomFrame(input) {
+            if (input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    currentFrameUrl = e.target.result;
+                    for(let i=0; i<5; i++) {
+                        document.getElementById(`cert_card_${i}`).style.backgroundImage = `url('${currentFrameUrl}')`;
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // មុខងារទាញយករូបភាពឡូហ្គូដែលបាន Upload ថ្មី
+        function uploadLogo(input) {
+            if (input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    currentLogoUrl = e.target.result;
+                    for(let i=0; i<5; i++) {
+                        document.getElementById(`cert_logo_${i}`).src = currentLogoUrl;
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // ដំណើរការកម្មវិធីដំបូង
+        window.onload = init;
+    </script>
+</body>
+</html>
