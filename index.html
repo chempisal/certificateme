@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធប័ណ្ណសរសើរ Smart - មានរូបថតក្រោយលេខ</title>
+    <title>ប្រព័ន្ធប័ណ្ណសរសើរ អនឡាញ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,6 +83,26 @@
             outline: none;
         }
 
+        /* ផ្ទាំងបង្ហាញព័ត៌មានអ្នកបង្កើត (Splash Screen) */
+#welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.95); /* ពណ៌ផ្ទៃក្រោយក្រម៉ៅ */
+    z-index: 9999; /* ឱ្យនៅលើគេបង្អស់ */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
         @media print {
             body { background: white; padding: 0; }
             .no-print { display: none !important; }
@@ -94,6 +114,22 @@
     </style>
 </head>
 <body>
+<div id="welcome-overlay">
+    <div class="text-center animate-bounce">
+        <i class="fa-solid fa-code text-5xl text-amber-500 mb-4"></i>
+    </div>
+    <h1 class="font-moul text-2xl md:text-3xl text-white tracking-wide mb-2">
+        ប្រព័ន្ធប័ណ្ណសរសើរអនឡាញ
+    </h1>
+    <p class="font-siemreap text-lg text-amber-400">
+        បង្កើតដោយ៖ <span class="font-moul text-xl text-white ml-1">លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</span>
+    </p>
+
+    
+    <div class="mt-6 w-32 bg-gray-700 h-1 rounded-full overflow-hidden">
+        <div class="bg-amber-500 h-full animate-[pulse_1s_infinite] w-full"></div>
+    </div>
+</div>
 
     <div class="no-print max-w-[297mm] mx-auto mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
         <div class="flex flex-wrap items-center justify-between gap-4">
@@ -112,7 +148,12 @@
                     <input type="file" accept="image/*" class="hidden" onchange="uploadFile(event, 'rank_bg')">
                 </label>
             </div>
-
+<div class="flex items-center gap-3 border-r pr-4">
+    <span class="font-bold text-gray-700"><i class="fa-solid fa-font"></i> ទំហំអក្សរ៖</span>
+    <input type="number" id="font-size-input" min="10" max="120" value="16" oninput="updateFontSizeFromInput()" class="w-16 p-1.5 border rounded text-center bg-gray-50 font-bold text-blue-600 focus:outline-none focus:border-blue-500">
+    <span class="text-sm font-bold text-gray-500">px</span>
+    <span class="text-xs text-gray-400 ml-2">*(ចុចលើអក្សរ រួចវាយលេខទំហំចូល)*</span>
+</div>
             <div class="flex items-center gap-3 border-r pr-4">
                 <span class="font-bold text-gray-700"><i class="fa-solid fa-font"></i> ទំហំអក្សរ៖</span>
                 <button onclick="changeFontSize('increase')" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full border font-bold text-xl">+</button>
@@ -305,6 +346,74 @@
             document.getElementById('cert-class').innerText = inputs[5].value;
             document.getElementById('cert-rank').innerText = inputs[6].value;
         }
+
+        // មុខងារលាក់ផ្ទាំង "បង្កើតដោយ" បន្ទាប់ពីដំណើរការបាន ៥ វិនាទី (5000 ម៉ាស៊ីនវិនាទី)
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const overlay = document.getElementById('welcome-overlay');
+        if (overlay) {
+            overlay.classList.add('fade-out');
+            // លុប Element ចេញពី DOM ក្រោយពេលវាលាក់បាត់ ដើម្បីកុំឱ្យទើសពេលចុចបញ្ជាកម្មវិធី
+            setTimeout(() => {
+                overlay.remove();
+            }, 500);
+        }
+    }, 5000); 
+});
+
+// ១. មុខងារប្តូរទំហំអក្សរតាមរយៈការវាយលេខចូលក្នុងប្រអប់ Input
+function updateFontSizeFromInput() {
+    if (!currentSelectedElement) {
+        alert("សូមចុចលើអក្សរណាមួយក្នុងប័ណ្ណសរសើរជាមុនសិន!");
+        return;
+    }
+    
+    const newSize = document.getElementById('font-size-input').value + 'px';
+    
+    // បើធាតុដែលជ្រើសរើសជាប្រអប់លេខចំណាត់ថ្នាក់
+    if (currentSelectedElement.classList.contains('rank-badge-box')) {
+        let frontText = currentSelectedElement.querySelector('.rank-text-front');
+        if (frontText) frontText.style.fontSize = newSize;
+        return;
+    }
+
+    // បើជាអក្សរធម្មតា គឺប្តូរទំហំស្លាក div និង span ទាំងអស់ដែលនៅក្នុង Box នោះ
+    const textElements = currentSelectedElement.querySelectorAll('div, span');
+    if (textElements.length > 0) {
+        textElements.forEach(el => {
+            el.style.fontSize = newSize;
+        });
+    } else {
+        currentSelectedElement.style.fontSize = newSize;
+    }
+}
+
+// ២. មុខងារទាញតម្លៃទំហំអក្សរពិតប្រាកដមកបង្ហាញក្នុងប្រអប់លេខ ពេលយើងចុចលើអក្សរណាមួយ
+function selectElement(el) {
+    if (currentSelectedElement) {
+        currentSelectedElement.classList.remove('selected');
+    }
+    currentSelectedElement = el;
+    currentSelectedElement.classList.add('selected');
+    
+    // ចាប់យកទំហំអក្សរបច្ចុប្បន្នមកបង្ហាញក្នុងប្រអប់ Input ស្វ័យប្រវត្តិ
+    let currentSize = 16; // តម្លៃលំនាំដើម
+    let targetEl = el;
+    
+    if (el.classList.contains('rank-badge-box')) {
+        targetEl = el.querySelector('.rank-text-front') || el;
+    } else {
+        targetEl = el.querySelector('div, span') || el;
+    }
+    
+    let style = window.getComputedStyle(targetEl, null).getPropertyValue('font-size');
+    if (style) {
+        currentSize = Math.round(parseFloat(style));
+    }
+    
+    // បញ្ចូលលេខទៅក្នុងប្រអប់
+    document.getElementById('font-size-input').value = currentSize;
+}
 
         // កូដពង្រីក-បង្រួមទំហំអក្សរ
         function changeFontSize(action) {
